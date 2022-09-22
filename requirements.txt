@@ -1,3 +1,4 @@
 environs==9.5.0
 Django==4.1
 channels==3.0.5
+channels_redis==3.3.1
