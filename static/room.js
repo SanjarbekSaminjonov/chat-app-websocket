@@ -61,7 +61,6 @@ function connect() {
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         console.log(data);
-
         switch (data.type) {
             case "chat_message":
                 chatLog.value += data.user + ": " + data.message + "\n";  // new

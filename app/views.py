@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 from .models import Room
@@ -23,7 +23,6 @@ def index_view(request):
 @login_required
 def room_view(request, room_name):
     chat_room, created = Room.objects.get_or_create(name=room_name)
-    chat_room.join(request.user)
     return render(request, 'room.html', {
         'room': chat_room,
     })
