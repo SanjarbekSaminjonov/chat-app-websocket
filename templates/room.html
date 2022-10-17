@@ -24,119 +24,105 @@
 </head>
 
 <body>
-    <div class="container mt-3 p-5">
-        <div class="d-flex justify-content-between align-items-center my-2">
-            <h2>You are {{ user.username|title }}</h2>
-            <a href="{% url 'index'%}" class="btn btn-secondary">Leave room</a>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-8">
-                <div class="mb-2">
-                    <label for="chatLog">Room: #{{ room.name }}</label>
-                    <textarea class="form-control" id="chatLog" readonly></textarea>
-                </div>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="chatMessageInput" placeholder="Enter your chat message">
-                    <div class="input-group-append">
-                        <button class="btn btn-success" id="chatMessageSend" type="button">Send</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <label for="onlineUsers">Online users ({{ room.get_online_count }})</label>
-                <select multiple class="form-control" id="onlineUsersSelector">
-                </select>
-            </div>
-        </div>
-        {{ room.name|json_script:"roomName" }}
+<div class="container mt-3 p-5">
+    <div class="d-flex justify-content-between align-items-center my-2">
+        <h2>You are {{ user.username|title }}</h2>
+        <a href="{% url 'index' %}" class="btn btn-secondary">Leave room</a>
     </div>
-    <script src="{% static 'room.js' %}"></script>
-    <script>
-        console.log("Sanity check from room.js.");
+    <div class="row">
+        <div class="col-12 col-md-8">
+            <div class="mb-2">
+                <label for="chatLog">Room: #{{ room.name }}</label>
+                <textarea class="form-control" id="chatLog" readonly></textarea>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="chatMessageInput" placeholder="Enter your chat message">
+                <div class="input-group-append">
+                    <button class="btn btn-success" id="chatMessageSend" type="button">Send</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="onlineUsers">Online users ({{ room.get_online_count }})</label>
+            <select multiple class="form-control" id="onlineUsersSelector">
+            </select>
+        </div>
+    </div>
+    {{ room.name|json_script:"roomName" }}
+</div>
+{#    <script src="{% static 'room.js' %}"></script>#}
+<script>
+    console.log("Sanity check from room.js.");
 
-        const roomName = JSON.parse(document.getElementById('roomName').textContent);
+    const roomName = JSON.parse(document.getElementById('roomName').textContent);
 
-        let chatLog = document.querySelector("#chatLog");
-        let chatMessageInput = document.querySelector("#chatMessageInput");
-        let chatMessageSend = document.querySelector("#chatMessageSend");
-        let onlineUsersSelector = document.querySelector("#onlineUsersSelector");
+    let chatLog = document.querySelector("#chatLog");
+    let chatMessageInput = document.querySelector("#chatMessageInput");
+    let chatMessageSend = document.querySelector("#chatMessageSend");
+    let onlineUsersSelector = document.querySelector("#onlineUsersSelector");
 
-        // // adds a new option to 'onlineUsersSelector'
-        // function onlineUsersSelectorAdd(value) {
-        //     if (document.querySelector("option[value='" + value + "']")) return;
-        //     let newOption = document.createElement("option");
-        //     newOption.value = value;
-        //     newOption.innerHTML = value;
-        //     onlineUsersSelector.appendChild(newOption);
-        // }
+    // focus 'chatMessageInput' when user opens the page
+    chatMessageInput.focus();
 
-        // // removes an option from 'onlineUsersSelector'
-        // function onlineUsersSelectorRemove(value) {
-        //     let oldOption = document.querySelector("option[value='" + value + "']");
-        //     if (oldOption !== null) oldOption.remove();
-        // }
-
-        // focus 'chatMessageInput' when user opens the page
-        chatMessageInput.focus();
-
-        // submit if the user presses the enter key
-        chatMessageInput.onkeyup = function (e) {
-            if (e.keyCode === 13) {  // enter key
-                chatMessageSend.click();
-            }
-        };
-
-        // clear the 'chatMessageInput' and forward the message
-        chatMessageSend.onclick = function () {
-            if (chatMessageInput.value.length === 0) return;
-            chatSocket.send(JSON.stringify({
-                "message": chatMessageInput.value,
-            }));
-            chatMessageInput.value = "";
-        };
-
-        let chatSocket = null;
-
-        function connect() {
-            chatSocket = new WebSocket("ws://" + window.location.host + "/ws/chat/" + roomName + "/");
-
-            chatSocket.onopen = function (e) {
-                console.log("Successfully connected to the WebSocket.");
-            };
-
-            chatSocket.onclose = function (e) {
-                console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
-                setTimeout(function () {
-                    console.log("Reconnecting...");
-                    connect();
-                }, 2000);
-            };
-
-            chatSocket.onmessage = function (e) {
-                const data = JSON.parse(e.data);
-                console.log(data);
-                switch (data.type) {
-                    case "chat_message":
-                        chatLog.value += data.user + ": " + data.message + "\n";
-                        break;
-                    default:
-                        console.error("Unknown message type!");
-                        break;
-                }
-
-                // scroll 'chatLog' to the bottom
-                chatLog.scrollTop = chatLog.scrollHeight;
-            };
-
-            chatSocket.onerror = function (err) {
-                console.log("WebSocket encountered an error: " + err.message);
-                console.log("Closing the socket.");
-                chatSocket.close();
-            };
+    // submit if the user presses the enter key
+    chatMessageInput.onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter key
+            chatMessageSend.click();
         }
-        connect();
+    };
 
-    </script>
+    // clear the 'chatMessageInput' and forward the message
+    chatMessageSend.onclick = function () {
+        if (chatMessageInput.value.length === 0) return;
+        chatSocket.send(JSON.stringify({
+            "message": chatMessageInput.value,
+        }));
+        chatMessageInput.value = "";
+    };
+
+    let chatSocket = null;
+
+    function connect() {
+        chatSocket = new WebSocket("ws://" + window.location.host + "/ws/chat/" + roomName + "/");
+
+        chatSocket.onopen = function (e) {
+            console.log("Successfully connected to the WebSocket.");
+        };
+
+        chatSocket.onclose = function (e) {
+            console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
+            setTimeout(function () {
+                console.log("Reconnecting...");
+                connect();
+            }, 2000);
+        };
+
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.log(data);
+            switch (data.type) {
+                case "chat_message":
+                    chatLog.value += data.user + ": " + data.message + "\n";
+                    break;
+                default:
+                    console.error("Unknown message type!");
+                    break;
+            }
+
+            // scroll 'chatLog' to the bottom
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+
+        chatSocket.onerror = function (err) {
+            console.log("WebSocket encountered an error: " + err.message);
+            console.log("Closing the socket.");
+            chatSocket.close();
+        };
+    }
+
+    connect();
+
+</script>
 </body>
 
 </html>

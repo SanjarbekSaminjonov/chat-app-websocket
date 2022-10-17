@@ -135,10 +135,10 @@ STATIC_URL = 'static/'
 
 if DEBUG:
     STATICFILES_DIRS = [
-        '/home/ubuntu/chat.saminjonov.uz/static/'
+        BASE_DIR / 'static'
     ]
 else:
-    STATIC_ROOT = '/home/ubuntu/chat.saminjonov.uz/static/'
+    STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
